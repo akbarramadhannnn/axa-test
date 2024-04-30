@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Table } from "reactstrap";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Table, Button } from "reactstrap";
 import { ApiGetListUsers } from "api/users";
 import Layout from "layout";
 import { Spinner } from "components";
 
 const Home = () => {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,6 +17,17 @@ const Home = () => {
       setIsLoading(false);
     });
   }, []);
+
+  const handleGoToPosts = useCallback(
+    ({ userId = "", email = "" }) => {
+      navigate(`/posts/${userId}`, {
+        state: {
+          email: email,
+        },
+      });
+    },
+    [navigate]
+  );
 
   return (
     <Layout>
@@ -41,12 +54,16 @@ const Home = () => {
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>
-                    <Link
-                      to={`/posts/${user.id}`}
-                      className="btn btn-primary me-3"
+                    <Button
+                      className="me-3"
+                      color="primary"
+                      onClick={() =>
+                        handleGoToPosts({ userId: user.id, email: user.email })
+                      }
                     >
                       Posts
-                    </Link>
+                    </Button>
+
                     <Link
                       to={`/albums/${user.id}`}
                       className="btn btn-primary me-3"
