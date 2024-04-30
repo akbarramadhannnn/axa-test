@@ -101,21 +101,35 @@ const Posts = () => {
 
   // add / update
   const handleOpenModalForm = useCallback(
-    ({ postId = "", title = "", btnText = "" }) => {
+    ({
+      postId = "",
+      title = "",
+      btnText = "",
+      valueTitle = "",
+      valueBody = "",
+    }) => {
       if (postId) {
-        setModalForm((oldState) => ({
-          ...oldState,
-          isLoading: true,
-        }));
         setPostId(postId);
-        ApiGeDetailPosts({ postId }).then((response) => {
+        if (!postId > 100) {
           setModalForm((oldState) => ({
             ...oldState,
-            isLoading: false,
-            valueTitle: response.title,
-            valueBody: response.body,
+            isLoading: true,
           }));
-        });
+          ApiGeDetailPosts({ postId }).then((response) => {
+            setModalForm((oldState) => ({
+              ...oldState,
+              isLoading: false,
+              valueTitle: response.title,
+              valueBody: response.body,
+            }));
+          });
+        } else {
+          setModalForm((oldState) => ({
+            ...oldState,
+            valueTitle,
+            valueBody,
+          }));
+        }
       }
 
       setModalForm((oldState) => ({
@@ -169,14 +183,26 @@ const Posts = () => {
         handleCloseModalForm();
       });
     } else {
-      payload.id = postId;
-      ApiUpdatePosts({ postId, payload }).then((response) => {
+      if (!postId > 100) {
+        payload.id = postId;
+        ApiUpdatePosts({ postId, payload }).then((response) => {
+          const state = [...posts];
+          const index = state.map((d) => d.id).indexOf(postId);
+          state[index] = response;
+          setPosts(state);
+          handleCloseModalForm();
+        });
+      } else {
         const state = [...posts];
         const index = state.map((d) => d.id).indexOf(postId);
-        state[index] = response;
+        state[index] = {
+          ...state[index],
+          title: payload.title,
+          body: payload.body,
+        };
         setPosts(state);
         handleCloseModalForm();
-      });
+      }
     }
   }, [modalForm, params, handleCloseModalForm, postId, posts]);
 
@@ -331,6 +357,8 @@ const Posts = () => {
                         title: "Update Post",
                         btnText: "Update",
                         postId: post.id,
+                        valueTitle: post.title,
+                        valueBody: post.body,
                       })
                     }
                     onClickDelete={() =>
