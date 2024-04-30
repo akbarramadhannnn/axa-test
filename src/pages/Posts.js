@@ -27,6 +27,8 @@ const Posts = () => {
   const [modalComment, setModalComment] = useState({
     isOpen: false,
     isLoading: false,
+    title: "",
+    body: "",
     comments: [],
     valueComments: "",
     indexComments: "",
@@ -60,6 +62,8 @@ const Posts = () => {
     setModalComment((oldState) => ({
       ...oldState,
       isOpen: false,
+      title: "",
+      body: "",
       comments: [],
       valueComments: "",
       indexComments: "",
@@ -68,20 +72,25 @@ const Posts = () => {
     setIsUpdateComment(false);
   }, []);
 
-  const handleCLickComments = useCallback(({ postId = "" }) => {
-    setModalComment((oldState) => ({
-      ...oldState,
-      isOpen: true,
-      isLoading: true,
-    }));
-    ApiGetListPostsComments({ postId }).then((response) => {
+  const handleCLickComments = useCallback(
+    ({ postId = "", title = "", body = "" }) => {
       setModalComment((oldState) => ({
         ...oldState,
-        isLoading: false,
-        comments: response,
+        isOpen: true,
+        isLoading: true,
       }));
-    });
-  }, []);
+      ApiGetListPostsComments({ postId }).then((response) => {
+        setModalComment((oldState) => ({
+          ...oldState,
+          isLoading: false,
+          title,
+          body,
+          comments: response,
+        }));
+      });
+    },
+    []
+  );
 
   const handleChangeInputComments = useCallback((e) => {
     const { value } = e.target;
@@ -173,7 +182,11 @@ const Posts = () => {
                     //   handleOnclickDelete({ postId: post.id })
                     // }
                     onClickComment={() =>
-                      handleCLickComments({ postId: post.id })
+                      handleCLickComments({
+                        postId: post.id,
+                        title: post.title,
+                        body: post.body,
+                      })
                     }
                   />
                 </Col>
@@ -187,25 +200,35 @@ const Posts = () => {
         toggle={handleCloseModalComments}
         scrollable
       >
-        <ModalHeader toggle={handleCloseModalComments}>Comments</ModalHeader>
+        <ModalHeader toggle={handleCloseModalComments}>Details</ModalHeader>
 
         {modalComment.isLoading ? <Spinner /> : null}
 
         {!modalComment.isLoading ? (
           <>
-            <ModalBody>
+            <ModalBody className="p-0">
+              <div className="px-3 my-3">
+                <h4>{modalComment.title}</h4>
+
+                <p>{modalComment.body}</p>
+              </div>
+
+              <div className="border mb-3 mt-4 px-3 py-2">
+                <h5 className="p-0 m-0">Comments</h5>
+              </div>
+
               {modalComment.comments.map((comment, index) => {
                 return (
                   <div
                     key={index}
-                    className={`${
+                    className={`px-3 ${
                       modalComment.comments.length - 1 === index
-                        ? ""
-                        : "pb-4 mb-4 border-bottom"
+                        ? "mb-3"
+                        : "pb-3 mb-3 border-bottom"
                     }`}
                   >
-                    <div className="d-flex justify-content-between mb-1">
-                      <h4>{comment.email}</h4>
+                    <div className="d-flex justify-content-between">
+                      <h6>{comment.email}</h6>
 
                       <div>
                         {!isUpdateComment && comment.isUpdate !== undefined ? (
@@ -240,7 +263,7 @@ const Posts = () => {
                       </div>
                     </div>
 
-                    <p className="mb-0">{comment.body}</p>
+                    <p className="mb-0 font-weight-lighter">{comment.body}</p>
                   </div>
                 );
               })}
