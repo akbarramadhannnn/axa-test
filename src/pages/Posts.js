@@ -7,7 +7,7 @@ import {
   ApiUpdatePosts,
   ApiDeletePosts,
 } from "api/posts";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   Button,
   Col,
