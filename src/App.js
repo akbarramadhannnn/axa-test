@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Routes, Route } from "react-router-dom";
-import { Home, Posts, Albums } from "pages";
+import { Home, Posts, Albums, Photos } from "pages";
 
 const App = () => {
   return (
@@ -9,6 +9,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/posts/:userId" element={<Posts />} />
         <Route path="/albums/:userId" element={<Albums />} />
+        <Route path="/albums/:userId/photos/:albumId" element={<Photos />} />
       </Routes>
     </Fragment>
   );

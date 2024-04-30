@@ -1,4 +1,5 @@
 import Spinner from "./Spinner";
 import CardPost from "./CardPost";
+import CardPhoto from "./CardPhoto";
 
-export { Spinner, CardPost };
+export { Spinner, CardPost, CardPhoto };
