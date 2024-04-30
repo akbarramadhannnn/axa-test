@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiGetListPosts, ApiGetListPostsComments } from "api/posts";
-import { useParams, useLocation } from "react-router-dom";
+import {
+  ApiGetListPosts,
+  ApiGetListPostsComments,
+  ApiGeDetailPosts,
+  ApiAddPost,
+  ApiUpdatePosts,
+  ApiDeletePosts,
+} from "api/posts";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
   Col,
@@ -10,18 +17,26 @@ import {
   ModalBody,
   ModalFooter,
   Input,
+  Label,
 } from "reactstrap";
 import Layout from "layout";
 import { Spinner, CardPost } from "components";
-import { FaPencilAlt, FaTrash, FaRegWindowClose } from "react-icons/fa";
+import {
+  FaPencilAlt,
+  FaTrash,
+  FaRegWindowClose,
+  FaArrowLeft,
+} from "react-icons/fa";
 
 const Posts = () => {
+  const navigate = useNavigate();
   const params = useParams();
   const location = useLocation();
 
   // posts
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [posts, setPosts] = useState([]);
+  const [postId, setPostId] = useState("");
 
   // modal comment
   const [modalComment, setModalComment] = useState({
@@ -35,6 +50,17 @@ const Posts = () => {
     isDisabledButton: true,
   });
   const [isUpdateComment, setIsUpdateComment] = useState(false);
+
+  // modal form
+  const [modalForm, setModalForm] = useState({
+    isOpen: false,
+    title: "",
+    btnTextRight: "",
+    isLoading: false,
+    valueTitle: "",
+    valueBody: "",
+    isDisabledButton: true,
+  });
 
   useEffect(() => {
     if (!modalComment.valueComments.length) {
@@ -51,11 +77,119 @@ const Posts = () => {
   }, [modalComment.valueComments]);
 
   useEffect(() => {
+    if (!modalForm.valueTitle.length || !modalForm.valueBody.length) {
+      setModalForm((oldState) => ({
+        ...oldState,
+        isDisabledButton: true,
+      }));
+    } else {
+      setModalForm((oldState) => ({
+        ...oldState,
+        isDisabledButton: false,
+      }));
+    }
+  }, [modalForm.valueTitle, modalForm.valueBody]);
+
+  useEffect(() => {
     ApiGetListPosts({ userId: params.userId }).then((response) => {
       setPosts(response);
       setIsLoadingPosts(false);
     });
   }, [params]);
+
+  // add / update
+  const handleOpenModalForm = useCallback(
+    ({ postId = "", title = "", btnText = "" }) => {
+      if (postId) {
+        setModalForm((oldState) => ({
+          ...oldState,
+          isLoading: true,
+        }));
+        setPostId(postId);
+        ApiGeDetailPosts({ postId }).then((response) => {
+          setModalForm((oldState) => ({
+            ...oldState,
+            isLoading: false,
+            valueTitle: response.title,
+            valueBody: response.body,
+          }));
+        });
+      }
+
+      setModalForm((oldState) => ({
+        ...oldState,
+        isOpen: true,
+        title,
+        btnTextRight: btnText,
+      }));
+    },
+    []
+  );
+
+  const handleCloseModalForm = useCallback(() => {
+    setModalForm((oldState) => ({
+      ...oldState,
+      isOpen: false,
+      isLoading: false,
+      title: "",
+      btnTextRight: "",
+      valueTitle: "",
+      valueBody: "",
+    }));
+    setPostId("");
+  }, []);
+
+  const handleChangeTitle = useCallback((e) => {
+    const { value } = e.target;
+    setModalForm((oldState) => ({
+      ...oldState,
+      valueTitle: value,
+    }));
+  }, []);
+
+  const handleChangeBody = useCallback((e) => {
+    const { value } = e.target;
+    setModalForm((oldState) => ({
+      ...oldState,
+      valueBody: value,
+    }));
+  }, []);
+
+  const handleSubmitModalForm = useCallback(() => {
+    const payload = {
+      title: modalForm.valueTitle,
+      body: modalForm.valueBody,
+      userId: params.userId,
+    };
+    if (modalForm.btnTextRight === "Add") {
+      ApiAddPost({ payload }).then((response) => {
+        setPosts((oldState) => [...oldState, response]);
+        handleCloseModalForm();
+      });
+    } else {
+      payload.id = postId;
+      ApiUpdatePosts({ postId, payload }).then((response) => {
+        const state = [...posts];
+        const index = state.map((d) => d.id).indexOf(postId);
+        state[index] = response;
+        setPosts(state);
+        handleCloseModalForm();
+      });
+    }
+  }, [modalForm, params, handleCloseModalForm, postId, posts]);
+
+  // delete
+  const handleOnclickDelete = useCallback(
+    ({ postId = "" }) => {
+      ApiDeletePosts({ postId }).then((response) => {
+        const state = [...posts];
+        const index = state.map((d) => d.id).indexOf(postId);
+        state.splice(index, 1);
+        setPosts(state);
+      });
+    },
+    [posts]
+  );
 
   // comments
   const handleCloseModalComments = useCallback(() => {
@@ -157,10 +291,33 @@ const Posts = () => {
     }));
   }, []);
 
+  const handleGoBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
   return (
     <Layout>
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <h1>Posts</h1>
+      </div> */}
+
+      <div className="d-flex align-items-center justify-content-between mt-4 mb-4">
+        <div className="d-flex align-items-center">
+          <Button className="me-3" color="light" onClick={handleGoBack}>
+            <FaArrowLeft />
+          </Button>
+
+          <h1 className="m-0 p-0">Posts</h1>
+        </div>
+
+        <Button
+          color="primary"
+          onClick={() =>
+            handleOpenModalForm({ title: "Add New Post", btnText: "Add" })
+          }
+        >
+          Add New Post
+        </Button>
       </div>
 
       {isLoadingPosts ? <Spinner /> : null}
@@ -175,12 +332,16 @@ const Posts = () => {
                     id={post.id}
                     title={post.title}
                     body={post.body}
-                    // onClickUpdate={() =>
-                    //   handleOnclickUpdate({ postId: post.id })
-                    // }
-                    // onClickDelete={() =>
-                    //   handleOnclickDelete({ postId: post.id })
-                    // }
+                    onClickUpdate={() =>
+                      handleOpenModalForm({
+                        title: "Update Post",
+                        btnText: "Update",
+                        postId: post.id,
+                      })
+                    }
+                    onClickDelete={() =>
+                      handleOnclickDelete({ postId: post.id })
+                    }
                     onClickComment={() =>
                       handleCLickComments({
                         postId: post.id,
@@ -292,6 +453,50 @@ const Posts = () => {
                   Comment
                 </Button>
               </div>
+            </ModalFooter>
+          </>
+        ) : null}
+      </Modal>
+
+      <Modal isOpen={modalForm.isOpen}>
+        <ModalHeader toggle={handleCloseModalForm}>
+          {modalForm.title}
+        </ModalHeader>
+
+        {modalForm.isLoading ? <Spinner /> : null}
+
+        {!modalForm.isLoading ? (
+          <>
+            <ModalBody>
+              <div className="mb-3">
+                <Label>Title</Label>
+                <Input
+                  value={modalForm.valueTitle}
+                  onChange={handleChangeTitle}
+                />
+              </div>
+
+              <div>
+                <Label>Body</Label>
+                <Input
+                  type="textarea"
+                  value={modalForm.valueBody}
+                  onChange={handleChangeBody}
+                />
+              </div>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button color="secondary" onClick={handleCloseModalForm}>
+                Cancel
+              </Button>
+              <Button
+                color="primary"
+                onClick={handleSubmitModalForm}
+                disabled={modalForm.isDisabledButton}
+              >
+                {modalForm.btnTextRight}
+              </Button>{" "}
             </ModalFooter>
           </>
         ) : null}
