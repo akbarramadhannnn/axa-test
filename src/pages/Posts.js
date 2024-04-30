@@ -295,10 +295,6 @@ const Posts = () => {
 
   return (
     <Layout>
-      {/* <div className="mb-4">
-        <h1>Posts</h1>
-      </div> */}
-
       <div className="d-flex align-items-center justify-content-between mt-4 mb-4">
         <div className="d-flex align-items-center">
           <Button className="me-3" color="light" onClick={handleGoBack}>
