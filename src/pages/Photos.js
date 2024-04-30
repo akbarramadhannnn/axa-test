@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { ApiGetListPhotoAlbums } from "api/albums";
 import { Spinner, CardPhoto } from "components";
 import { Button, Row, Col } from "reactstrap";
 import { FaArrowLeft } from "react-icons/fa";
 import Layout from "layout";
+import useGoBack from "hooks/useGoBack";
 
 const Photos = () => {
-  const navigate = useNavigate();
+  const { handleGoBack } = useGoBack();
   const params = useParams();
 
   const [photos, setPhotos] = useState([]);
@@ -19,10 +20,6 @@ const Photos = () => {
       setIsLoading(false);
     });
   }, [params]);
-
-  const handleGoBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
 
   return (
     <Layout>

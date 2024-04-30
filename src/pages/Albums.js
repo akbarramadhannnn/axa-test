@@ -5,8 +5,11 @@ import { Table, Button } from "reactstrap";
 import { Spinner } from "components";
 import { FaArrowLeft } from "react-icons/fa";
 import Layout from "layout";
+import useGoBack from "hooks/useGoBack";
 
 const Albums = () => {
+  const { handleGoBack } = useGoBack();
+  
   const navigate = useNavigate();
   const params = useParams();
 
@@ -26,10 +29,6 @@ const Albums = () => {
     },
     [navigate]
   );
-
-  const handleGoBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
 
   return (
     <Layout>

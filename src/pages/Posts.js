@@ -27,9 +27,11 @@ import {
   FaRegWindowClose,
   FaArrowLeft,
 } from "react-icons/fa";
+import useGoBack from "hooks/useGoBack";
 
 const Posts = () => {
-  const navigate = useNavigate();
+  const { handleGoBack } = useGoBack();
+
   const params = useParams();
   const location = useLocation();
 
@@ -290,10 +292,6 @@ const Posts = () => {
       indexComments: "",
     }));
   }, []);
-
-  const handleGoBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
 
   return (
     <Layout>
