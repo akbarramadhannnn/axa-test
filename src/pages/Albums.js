@@ -1,16 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ApiGetListAlbums } from "api/albums";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Table, Button } from "reactstrap";
 import { Spinner } from "components";
 import { FaArrowLeft } from "react-icons/fa";
 import Layout from "layout";
-import useGoBack from "hooks/useGoBack";
+import useNavigate from "hooks/useNavigate";
 
 const Albums = () => {
-  const { handleGoBack } = useGoBack();
-  
-  const navigate = useNavigate();
+  const { handleGoBack } = useNavigate();
+
   const params = useParams();
 
   const [albums, setAlbums] = useState([]);
@@ -22,13 +21,6 @@ const Albums = () => {
       setIsLoading(false);
     });
   }, [params]);
-
-  const handleGoToPhotos = useCallback(
-    ({ userId = "", albumId = "" }) => {
-      navigate(`/albums/${userId}/photos/${albumId}`);
-    },
-    [navigate]
-  );
 
   return (
     <Layout>
@@ -55,18 +47,12 @@ const Albums = () => {
                 <tr>
                   <td>{album.title}</td>
                   <td>
-                    <Button
-                      className="me-3"
-                      color="primary"
-                      onClick={() =>
-                        handleGoToPhotos({
-                          albumId: album.id,
-                          userId: album.userId,
-                        })
-                      }
+                    <Link
+                      to={`/albums/${album.userId}/photos/${album.id}`}
+                      className="btn btn-primary"
                     >
                       Read Photos
-                    </Button>
+                    </Link>
                   </td>
                 </tr>
               </tbody>

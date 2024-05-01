@@ -27,10 +27,10 @@ import {
   FaRegWindowClose,
   FaArrowLeft,
 } from "react-icons/fa";
-import useGoBack from "hooks/useGoBack";
+import useNavigate from "hooks/useNavigate";
 
 const Posts = () => {
-  const { handleGoBack } = useGoBack();
+  const { handleGoBack } = useNavigate();
 
   const params = useParams();
   const location = useLocation();
