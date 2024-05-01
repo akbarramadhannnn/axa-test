@@ -11,5 +11,5 @@
 - open ```http://localhost:3000``` to view it in your browser.
 
 ### - Host or Port
-- ```http://localhost:3000``` (local)
-- ```http://103.161.184.57``` (live)
+- http://localhost:3000 (local)
+- http://103.161.184.57 (live)
